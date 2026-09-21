@@ -1,10 +1,12 @@
 #!/bin/sh
 # Publish the current cloudflared quick-tunnel URL to GitHub.
 #
-# This keeps two dynamic lines at the end of the configured GitHub file:
-#   line 3: https://....trycloudflare.com
-#   line 4: UTC timestamp of the update
-# Lines 1-2 are preserved untouched.
+# File layout (hmmmmmm):
+#   line 1: viewer username (preserved)
+#   line 2: viewer password (preserved)
+#   line 3: takeover password (preserved - set manually, never touched here)
+#   line 4: https://....trycloudflare.com (updated by this script)
+#   line 5: UTC timestamp of the update (updated by this script)
 #
 # Required: GITHUB_TOKEN (or TOKEN_FILE). Do NOT hard-code the token here.
 # Optional: GITHUB_REPO, GITHUB_PATH, GITHUB_BRANCH, CLOUDFLARED_CONTAINER,
@@ -67,10 +69,10 @@ if not sha:
     sys.exit(1)
 raw = base64.b64decode(meta.get("content") or "").decode("utf-8", errors="replace")
 lines = raw.splitlines()
-if len(lines) < 2 or not lines[0].strip() or not lines[1].strip():
-    print("error: refusing to rewrite unexpected file; need 2 preserved lines", file=sys.stderr)
+if len(lines) < 3 or not lines[0].strip() or not lines[1].strip() or not lines[2].strip():
+    print("error: refusing to rewrite unexpected file; need 3 preserved lines", file=sys.stderr)
     sys.exit(1)
-new_text = "\n".join([lines[0], lines[1], url, stamp]) + "\n"
+new_text = "\n".join([lines[0], lines[1], lines[2], url, stamp]) + "\n"
 if new_text == raw:
     print("no change")
     sys.exit(0)
